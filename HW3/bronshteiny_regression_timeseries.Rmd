@@ -1,0 +1,85 @@
+---
+title: "Regression and Time Series HW 3"
+author: "Yaniv Bronshtein"
+date: "9/28/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Import the necessary libraries**
+```{r}
+library(tidyverse)
+library(leaps)
+```
+Use the IPOdecision data (0=withdraw) for the following analysis
+
+(a) Fit a logistic regression model using all predictors in the data file. Comment on which
+predictors are significant.
+
+```{r}
+df <- read.table("/Users/yanivbronshtein/Coding/Rutgers/Regression_TimeSeries_Repo/HW3/IPOdecision.dat", header = TRUE)
+head(df,5)
+```
+**Fit a logistic regression**
+```{r}
+
+log.reg.fit <- glm(decision~., family=binomial("logit"), data=df)
+summary(log.reg.fit)
+```
+*The features: debtRatio2, ProfibilityRatio, and Venture Dummy are the most significant*
+*given the extremely low P-Values. However, debtRatio, DebtPaymentDummy, logMarket, and logAST are also signficant to a lesser degree*
+
+
+
+
+b) Use backward selection procedure to find the (sub)optimal set of predictors to explain the IPO completion/withdrawn decision. Note: Backward selection starts with the largest model and remove the least significant predictor (largest p-value of the z-test) one by one, each time re-estimating the model, until all coefficients are significant at 5% level.
+
+
+```{r}
+bw.selection.fit <- regsubsets(decision~., method="backward", data=df )
+bw.selection.summary <- summary(bw.selection.fit)
+```
+**Let us create a plot to determine the optimal set**
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(bw.selection.summary$adjr2, type='l', xlab='Dimension', ylab='Adjusted R^2')
+plot(bw.selection.summary$cp, type='l', xlab='Dimension', ylab='Cp')
+plot(bw.selection.summary$bic, type='l', xlab='Dimension', ylab='BIC')
+
+```
+
+*Based on the plots of the 3 metrics Adjusted R^2, Cp, and BIC, 4 dimensions is sufficient*
+*to capture the data*
+```{r}
+bw.selection.summary
+
+
+```
+*Looking at the summary() object, the set of 4 predictors will contain the following features:*
+*logAST, debtRatio, VentureDummy, logMarket* 
+
+
+(c) Run an ANOVA analysis to compare the full model in (a) and the model you obtained in (b). 
+Which one do you prefer? (Write the null hypothesis etc). 
+Write down in detail the model you preferred, in mathematical equations.
+
+```{r}
+
+log.reg.fit2 <- glm(decision~logAST+debtRatio+VentureDummy+logMarket, family=binomial, data=df)
+
+my_anova <- anova(log.reg.fit, log.reg.fit2, test='Chisq')
+my_anova
+```
+
+
+*H0: All the beta coefficients for the features: logAST,debtRatio,VentureDummy,logMarket*
+*are 0*
+*H1: There exists at least one beta coefficient for the features mentioned in H0 that is non-zero*
+
+*Based on the result of the test, the p-value obtained is less than 0.05 meaning there is evidence to suggest that at least one beta coefficient* 
+*among logAST,debtRatio,VentureDummy,logMarket is non-zero.*
