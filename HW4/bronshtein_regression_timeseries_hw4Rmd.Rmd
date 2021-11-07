@@ -1,0 +1,135 @@
+---
+title: "Regression and Time Series HW4"
+author: "Yaniv Bronshtein"
+date: "10/12/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Import the necessary libraries**
+```{r}
+library(tidyverse)
+library(pls)
+library(leaps)
+```
+**Read in csv**
+```{r, echo=FALSE}
+house <- read.table("/Users/yanivbronshtein/Coding/Rutgers/Regression_TimeSeries_Repo/data/housing_price.txt", header = TRUE)
+
+```
+
+(1) Based on the R output, what would be the regression model you suggest?
+```{r}
+model.prof <- lm(formula=Price~FLR+RMS+BDR+BTH+ST+GAR+FP+LOT,data=house)
+summary(model.prof)
+```
+*Based on the output, I would suggest the model with Price as the dependent variable and*
+*the features: FLR, RMS, BDR, ST, and FP based on the asterisks that R provides*
+*in the summary() object and based on the actual p-values. I have provided the trained model.reduced.prof*
+*that reflects this idea*
+
+
+
+(2) Write down the full model and reduced model associated with the following test 
+and draw a conclusion based on this test (Note: This is a row obtained from the R output):
+GAR 1.77 1.40 1.26 0.2243
+**Reduced model based on p-values from full model**
+```{r}
+model.reduced.prof <- lm(formula=Price~FLR+RMS+BDR+ST+FP, data=house)
+summary(model.reduced.prof)
+```
+
+
+*H0: The coefficient for GAR is equal to 0*
+*H1: The coefficient for GAR is significant and therefore non-zero*
+*The F statistic is 26.05*
+```{r}
+model.prof.nogar <- lm(formula=Price~FLR+RMS+BDR+BTH+ST+FP+LOT,data=house)
+anova(model.prof.nogar, model.prof)
+```
+*Based on the result of the anova, Pr(>F) is greater than 0.05, so we fail to*
+*reject the null hypothesis with greater than 95% confidence. The F statistic is 1.5902*
+
+
+
+
+(3) Write down the null hypothesis and alternative hypothesis associated with the F-statistic and
+what is the conclusion based on the test.
+*H0: The coefficients for BTH, GAR, and LOT are all equal to 0
+*H1: There exists at least 1 coefficient the above features that is non-zero
+```{r}
+anova(model.prof, model.reduced.prof)
+
+```
+
+*For the reduced model we can reject H0 because of the high F statistic*
+
+(4) The house for selling has 750 square feet of space, 5 rooms, 2 bedrooms, 
+1.5 baths, storm windows, a 1-car garage, 1 fireplace and a 25 front-foot lot. 
+Analyze the housing price data. Based on this dataset, what can you tell this 
+person about how much he could expect to get for the house? Please report your 
+fitted model and also construct a confidence interval for the prediction 
+(Hint: You can try different variable selection methods to find the final model).
+
+*We know the following coefficients:FLR=750, RMS=5, BDR=2, BTH=1.5, FP=1, LOT=25*
+
+**Create a new dataframe with the specified coefficients to mimic a test set**
+```{r}
+test.df <- data.frame(FLR = 750, RMS = 5, BDR =2, BTH =1.5, ST =1, GAR =1, FP =1,LOT=25)
+```
+
+**Create the prediction**
+```{r}
+predict(model.prof,test.df, interval="confidence")
+
+```
+
+**Backward step-wise**
+```{r}
+reg.fit.bwd <- regsubsets(Price~FLR+RMS+BDR+BTH+ST+GAR+FP+LOT,data=house, method="backward")
+reg.fit.bwd.sum <- summary(reg.fit.bwd)
+```
+
+**Get the min bic value for a conservative estimate**
+```{r}
+which.min(reg.fit.bwd.sum$bic)
+```
+#From the backward stepwise, we can remove BTH and GAR variables 
+
+#Predicting based on the updated model 
+```{r}
+model.fit.using.bwd <- lm(formula=Price~FLR+RMS+BDR+ST+FP+LOT, data=house)
+```
+**Modified data**
+```{r}
+test.df2 = data.frame(FLR=750, RMS=5, BDR=2, ST=1, FP =1, LOT=25)
+```
+**Create the new prediction**
+```{r}
+predict(model.fit.using.bwd,test.df2, interval="confidence")
+```
+**Let's try the forward stepwise method now to see if our results differ**
+```{r}
+reg.fit.fwd <- regsubsets(Price~FLR+RMS+BDR+BTH+ST+GAR+FP+LOT,data=house, method="forward")
+```
+
+**Let's get the summary**
+```{r}
+reg.fit.bwd.sum <- summary(reg.fit.fwd)
+reg.fit.bwd.sum
+```
+
+**Let's get the min BIC value**
+```{r}
+which.min(reg.fit.bwd.sum$bic)
+```
+*Both forward and backward selection concluded that the minimum number of features need*
+*is 6 and the same features need to be removed. Thus the confidence intervals must also be*
+*the same*
+
+
+
+

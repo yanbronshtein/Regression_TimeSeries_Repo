@@ -1,0 +1,104 @@
+---
+title: "Regression and Time Series:HW2"
+author: "Yaniv Bronshtein"
+date: "9/22/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+**Import the necessary libraries**
+```{r}
+library(tidyverse)
+```
+
+1. Calculate the market returns by taking the weighted average of columns 3 to 5, with weights 0.3, 0.4 and 0.3.
+**Load in the data**
+```{r}
+data <- read_table("Portfolios_Formed_on_ME_eqW.txt")
+```
+
+**Calculate the weighted average**
+```{r}
+data <- data %>% mutate(market_returns=0.3*Lo30 + 0.4*Med40 + 0.3*Hi30)
+```
+(a) Plot the market return series `(plot(x,type=’l’)` will do).
+```{r}
+plot(x=data$date, y=data$market_returns, type='l')
+```
+
+(b) Comment on the features you see in the figure
+*By setting the x-axis to date and y-axis to market_returns, one can see dramatic*
+*Oscillation between prior to 1940 which was the start of WW2 war effort by the U.S*
+*Looking at history, this was the time that the U.S came out of the Great Depression*
+*In the years that followed, there were key events that caused severe drops,*
+*but nothing like the stock market crash of 1929. Notable mentions are Black Monday(1987)*
+*and the 2008 financial crisis*
+
+2. Use the data from 1965.01 to 1969.12 (rows 463:522) only to fit a simple linear regression using Column 11 (the small company portfolio) as the response variable and the market return you obtained in (1) as explanatory variable. Answer the following questions:
+```{r}
+sub_df <- data[463:522,]
+model.fit <- lm(formula = Lo10~market_returns, data = sub_df)
+summary <- summary(model.fit)
+summary
+```
+
+
+(a) Draw a scatter plot and add the estimated regression line to the plot.
+**Extract the coefficients**
+```{r}
+coefs <- summary$coefficients
+coefs
+
+```
+
+**Create plot and add abline**
+```{r}
+plot(x=sub_df$market_returns, y=sub_df[[11]], xlab = "Market Returns", ylab = "Lo10")
+abline(model.fit, col='blue')
+```
+(b) What is the standard error of b1 for estimating $\beta_1$?
+*The standard error for estimating* $\beta_1$ *is 0.06497297*
+(c) Obtain a 95% confidence interval for b1. What does a confidence interval mean in general?
+```{r}
+confint(model.fit, 'market_returns', level=0.95)
+
+```
+*A confidence interval tells the statistician how stable the estimate is for the variable.* 
+*A stable estimate means that if the experiment were performed again, a similar value would be computed*
+(d) What is the p-value for testing H0 : $\beta_0 = 0$ vs H1 : $\beta_0 \ne 0$? What is your conclusion?
+
+*Based on the summary from an earlier part, the P-value for the intercept $\beta_0$*
+*is 8.396004e-02. The intercept is significant. We conclude that we must reject the null hypothesis*
+*Thus the intercept cannot be 0*
+
+(e) What is the p-value for testing H0 : $\beta_1 = 0$ vs H1 : $\beta_1 \ne 0$? What is your conclusion?
+```{r}
+model.fit3 <- lm(formula = Lo10~market_returns, data=sub_df)
+summary3 <- summary(model.fit3)
+summary3
+
+```
+*Because the P-value is small, we reject the H0. We can conclude there is a relationship between*
+*market return and Lo10*
+(f) Perform a 5% level test for testing H0 : $\beta_1 = 1$ vs H1 : $\beta_1 \ne 1$? What is your conclusion?
+```{r}
+model.fit4 <- lm(formula = Lo10~market_returns, data = sub_df)
+summary_4 <- summary(model.fit4)
+summary_4
+```
+```{r}
+confint(model.fit4)
+```
+(g) Obtain the R2 of this linear regression model.fit. What does it mean? Comment on it.
+
+```{r}
+
+summary_4$r.squared
+
+```
+*The R^2 of the linear regression model.fit is 0 meaning that it does not explain any variance*
+*The residuals are too large*
+
+

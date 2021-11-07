@@ -83,3 +83,9 @@ my_anova
 
 *Based on the result of the test, the p-value obtained is less than 0.05 meaning there is evidence to suggest that at least one beta coefficient* 
 *among logAST,debtRatio,VentureDummy,logMarket is non-zero.*
+*Thus, the model with all the variables is a better model because it has at least one of the features missing from the reduced model*
+$y = 1.17211*logAST + -3.24485*debtRatio - 56.36229*debtRatio2 +$ 
+$51.98373*Profitability + 1.60128*VentureDummy-0.09156*underwriterRating +$ 
+$0.14882*logRevenue - 1.08411*DebtPaymentDummy - 1.31368*logMarket +$ 
+$5.56798*NASDAQ30dayReturn - 0.31168*logNumIPS + 19.32453$
+

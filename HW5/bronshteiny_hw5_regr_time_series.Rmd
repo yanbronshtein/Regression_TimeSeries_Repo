@@ -1,0 +1,116 @@
+---
+title: "hw5"
+author: "Yaniv Bronshtein"
+date: "11/6/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Import the necessary libraries
+```{r}
+library(forecast)#Source of gold dataset
+library(tryCatchLog) #For exception handling
+library(TTR) #For SMA
+```
+
+Daily morning gold prices in US dollars. 1 January 1985 – 31 March 1989.
+```{r}
+data("gold")
+```
+The classic Box & Jenkins airline data. Monthly totals of international airline passengers, 1949 to 1960 from base-R datasets. Monthly data.
+```{r}
+data(AirPassengers)
+```
+
+A time series object containing average air temperatures at Nottingham Castle in degrees Fahrenheit for 20 years.(1920-1939)
+```{r}
+data(nottem)
+```
+
+
+**Create time series objects from data**
+```{r}
+gold_ts <- ts(gold, start=1, end = 731) #January 1st 1985- Jan 1st 1987 subset
+air_pass_ts <- AirPassengers
+nottem_ts <- ts(nottem)
+
+```
+
+**Plot gold time series**
+```{r}
+plot.ts(gold_ts)
+```
+
+**Plot Air Passengers time series **
+```{r}
+plot.ts(air_pass_ts)
+```
+
+**Plot nottem time series**
+```{r}
+plot.ts(nottem_ts)
+```
+**Decomposing Gold time series.Impossible, so there is no seasonal component **
+```{r}
+try_catch(decomposed_gold_additive <- decompose(gold_ts, type='additive'), .e=~print("Cannot decompose additive agold"))
+try_catch(decomposed_gold_mult <- decompose(gold_ts, type='multiplicative'), .e=~print("Cannot decompose multiplicative gold"))
+```
+**Instead, let us try to use SMA for Gold data.**
+```{r}
+try_catch(sma_gold <- SMA(gold_ts), .e=~print("Cannot get moving average gold"))
+```
+**We can now try exponential smoothing on gold data**
+```{r}
+log_gold <- log(gold_ts)
+#Now that we have taken the log, let's try to fit a linear model
+plot.ts(log_gold)
+```
+
+**Decomposing Airpassenger time series.Successful**
+```{r}
+try_catch(decomposed_air_pass_additive <- decompose(air_pass_ts, type='additive'), .e=~print("Cannot decompose additive air pass"))
+try_catch(decomposed_air_pass_mult <- decompose(air_pass_ts, type='multiplicative'), .e=~print("Cannot decompose multiplicative air pass"))
+
+```
+
+**Since Airpassenger decomposition was successful, let us plot the decomposed version.**
+**We see that both plots are successful.**
+```{r}
+plot(decomposed_air_pass_additive)
+plot(decomposed_air_pass_mult)
+```
+**Let us now try seasonal adjustment for AirPassengers**
+```{r}
+air_pass_seasonal_adj <- air_pass_ts - decomposed_air_pass_additive$seasonal
+plot(air_pass_seasonal_adj)
+```
+
+**Decomposing Nottem time series.Impossible **
+```{r}
+try_catch(decomposed_nottem_additive <- decompose(nottem_ts, type='additive'), .e=~print("Cannot decompose additive nottem"))
+try_catch(decomposed_nottem_mult <- decompose(nottem_ts, type='multiplicative'), .e=~print("Cannot decompose multiplicative nottem"))
+```
+**Instead, let us try to use SMA for Nottem data**
+```{r}
+try_catch(sma_nottem <- SMA(nottem_ts), .e=~print("Cannot get moving average SMA"))
+```
+
+**Since no error was generated, we can plot sma_nottem**
+```{r}
+plot.ts(sma_nottem)
+```
+
+# Observations and Conclusions
+In the subset of data taken from the gold prices dataset, the price of Gold is increasing.
+That is not the case for the entire dataset.
+Neither Gold nor nottem data are additive models which is why decompose() 
+does not work for them. 
+
+However, Air passengers is additive and multiplicative as both decompositions are possible
+There is a clear upward trend; As time increases, the number of passengers increases
+For nottem data, we were able to compute the moving average using SMA().
+
+
