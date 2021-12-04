@@ -1,0 +1,120 @@
+---
+title: "Time Series HW8"
+author: "Yaniv Bronshtein(yb262)"
+date: "11/30/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Import the necessary libraries**
+```{r}
+library(sarima)
+library(forecast)
+```
+(III) For the following models, simulate 400 observations, estimate the model, obtain 1-step ahead to 12-step ahead predictions and their standard errors, and plot the last 24 observed observations with the predictions and their 95% confidence intervals.
+
+1. $(x_t−20)=−0.7(x_{t−1}−20)+\epsilon_t,\epsilon_t ∼ N(0,5^2)$
+
+```{r}
+set.seed(123)
+sim1 <- arima.sim(model=list(order=c(1,0,0), ar=c(-0.7)), n=400, sd = 5)+20
+model1 <- arima(sim1, order=c(1,0,0))
+model1.pred <- predict(model1, n.ahead=12)
+```
+
+**Predictions for model 1**
+```{r}
+model1.pred$pred
+```
+
+**Standard errors for model 1 predictions**
+```{r}
+model1.pred$se
+```
+
+**Plot last 24 observations with 95% confidence intervals for predictions **
+```{r}
+plot(forecast(model1,h=12, level=0.95), include=24)
+```
+
+
+2. $(1−1.4B+0.48B^2)(x_t−20)=(1+1.2B+0.35B^2)\epsilon_t,\epsilon_t ∼N(0,5^2)$
+```{r}
+set.seed(123)
+sim2 <- arima.sim(model=list(order=c(2,0,2),ar=c(1.4,-0.48), ma=c(1.2,0.35)), n=400, sd=5)+20
+model2 <- arima(sim2, order=c(2,0,2))
+model2.pred <- predict(model2, n.ahead=12)
+```
+
+**Model 2 predictions**
+```{r}
+model2.pred$pred
+```
+
+**Standard errors for model 2 predictions**
+```{r}
+model2.pred$se
+```
+
+**Plot last 24 observations with 95% confidence intervals for predictions **
+```{r}
+plot(forecast(model2,h=12, level=0.95), include=24)
+```
+
+
+
+
+
+3. $(1−0.8B)\Delta x_t = (1+0.6B)\epsilon_t,\epsilon_t ∼ N(0,5^2)$
+```{r}
+set.seed(123)
+sim3 <- arima.sim(model=list(order=c(1,1,1),ar=c(0.8), ma=c(0.6)), n=400, sd=5)
+model3 <- arima(sim3, order=c(1,1,1))
+model3.pred <- predict(model3, n.ahead=12)
+```
+
+**Model 3 predictions**
+```{r}
+model3.pred$pred
+```
+
+**Standard errors for model 3 predictions**
+```{r}
+model3.pred$se
+```
+
+**Plot last 24 observations with 95% confidence intervals for predictions **
+```{r}
+plot(forecast(model3,h=12, level=0.95), include=24)
+```
+
+4. $(1−B^{12})x_t =(1+0.8B)(1+0.8B^{12})\epsilon_t,\epsilon_t ∼N(0,5^2)$.
+
+$ARIMA(0,0,1)(1,0,1)_{12}$
+```{r}
+set.seed(123)
+sim4 <- sim_sarima(model=list(siorder=1, ma=c(0.8), sma=c(0.8), nseasons=12), n=400, sd=5)
+
+model4 <- arima(sim4, order=c(0,0,1), seasonal=list(order=c(1,0,1), period=12))
+
+model4.pred <- predict(model4, n.ahead=12)
+```
+
+**Model 4 predictions**
+```{r}
+model4.pred$pred
+```
+
+**Standard errors for model 4 predictions**
+```{r}
+model4.pred$se
+```
+
+**Plot last 24 observations with 95% confidence intervals for predictions **
+```{r}
+plot(forecast(model4,h=12, level=0.95), include=24)
+```
+

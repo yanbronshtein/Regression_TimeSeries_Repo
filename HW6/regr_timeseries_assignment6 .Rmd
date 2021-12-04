@@ -1,0 +1,31 @@
+---
+title: "Regression & Time Series HW 6"
+author: "Yaniv Bronshtein"
+date: "11/10/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. Generate n=100 observations of the time series by xt=wt-1 + 2wt + wt+1 where
+{wt} ~ N(0,1). Plot the sample autocorrelation
+
+```{r}
+set.seed(1)
+w <- rnorm(n=102, mean=0, sd=1)
+wtm1 <- w[1]
+wt <- w[2:101]
+wtp1 <- w[102]
+xt <- wtm1 + 2 * wt + wtp1
+```
+
+**Create the plot**
+```{r}
+acf(xt, main='Autocorrelation of xt')
+```
+
+
+
+

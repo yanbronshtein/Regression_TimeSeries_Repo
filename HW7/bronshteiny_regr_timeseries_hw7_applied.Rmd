@@ -1,0 +1,51 @@
+---
+title: "Regression and Time Series HW7"
+author: "Yaniv Bronshtein"
+date: "11/18/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+(c) Simulate a time series of length T=2000 from this model.
+Create a time series plot. Compute the lag-1, lag-2, and lag-3 sample autocorrelations
+```{r}
+set.seed(1)
+T <- 2000
+#rt = 0.01 + 0.6rt−1 − 0.4rt−2 + at
+a_t <- rnorm(n=T, mean=0, sd=sqrt(0.02))
+
+r_t <- 0.01 + arima.sim(model=list(order=c(2, 0, 0), ar=c(0.6, -.4)),n =T) + a_t
+```
+
+**Let's now create a time series plot**
+```{r}
+plot.ts(r_t)
+
+```
+
+
+**Sample autocorrelation plot**
+```{r}
+acf <- acf(r_t)
+acf
+```
+
+**Calculate lag1**
+```{r}
+acf[1]
+
+```
+**Calculate lag2**
+```{r}
+acf[2]
+```
+
+**Calculate lag3**
+```{r}
+acf[3]
+```
+
